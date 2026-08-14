@@ -1,244 +1,84 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Album, Camera, Heart, MapPin, MessageCircleHeart, Send, Volume2, VolumeX, X } from 'lucide-react'
+import { Album, Camera, Heart, MapPin, MessageCircleHeart, Send, Volume2, VolumeX, LogIn, Upload, ImagePlus, Trash2, Users } from 'lucide-react'
+import { supabase, hasSupabase } from './lib/supabase'
 
 const EVENT_DATE = new Date('2026-08-27T20:00:00+03:00')
 const MAP_URL = 'https://maps.app.goo.gl/5ZTEqBQ7FyvxmEnp9?g_st=iw'
-
+const YOUTUBE_URL = 'https://www.youtube-nocookie.com/embed/cNGjD0VG4R8?autoplay=1&loop=1&playlist=cNGjD0VG4R8&playsinline=1&rel=0'
 const navItems = [
-  { id: 'album', label: 'Album', icon: Album },
-  { id: 'camera', label: 'Camera', icon: Camera },
-  { id: 'location', label: 'Location', icon: MapPin },
-  { id: 'rsvp', label: 'RSVP', icon: Heart },
-  { id: 'wishes', label: 'Wishes', icon: MessageCircleHeart },
+  { id: 'album', label: 'Album', icon: Album }, { id: 'camera', label: 'Camera', icon: Camera },
+  { id: 'location', label: 'Location', icon: MapPin }, { id: 'rsvp', label: 'RSVP', icon: Heart }, { id: 'wishes', label: 'Wishes', icon: MessageCircleHeart },
 ]
-
-function getTimeLeft() {
-  const diff = Math.max(0, EVENT_DATE.getTime() - Date.now())
-  const total = Math.floor(diff / 1000)
-  return {
-    days: Math.floor(total / 86400),
-    hours: Math.floor((total % 86400) / 3600),
-    minutes: Math.floor((total % 3600) / 60),
-    seconds: total % 60,
+function getTimeLeft(){const diff=Math.max(0,EVENT_DATE-Date.now());const t=Math.floor(diff/1000);return{days:Math.floor(t/86400),hours:Math.floor(t%86400/3600),minutes:Math.floor(t%3600/60),seconds:t%60}}
+function App(){
+  if(location.pathname==='/admin') return <Admin />
+  const [opened,setOpened]=useState(false),[musicOn,setMusicOn]=useState(true),[timeLeft,setTimeLeft]=useState(getTimeLeft()),[active,setActive]=useState('home')
+  const [wishes,setWishes]=useState([]),[story,setStory]=useState([]),[memories,setMemories]=useState([]),[frameUrl,setFrameUrl]=useState('')
+  const [wishName,setWishName]=useState(''),[wishText,setWishText]=useState(''),[rsvpName,setRsvpName]=useState(''),[attendance,setAttendance]=useState(true),[guests,setGuests]=useState('1')
+  const [stream,setStream]=useState(null),[photo,setPhoto]=useState(null),[uploading,setUploading]=useState(false),[notice,setNotice]=useState('')
+  const videoRef=useRef(null),canvasRef=useRef(null)
+  useEffect(()=>{const t=setInterval(()=>setTimeLeft(getTimeLeft()),1000);return()=>clearInterval(t)},[])
+  useEffect(()=>{loadShared();return()=>stream?.getTracks().forEach(t=>t.stop())},[stream])
+  useEffect(()=>{const ids=['home','album','location','camera','rsvp','wishes'];const ob=new IntersectionObserver(es=>{const v=es.filter(x=>x.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(v)setActive(v.target.id)},{threshold:[.3,.6]});ids.forEach(id=>{const e=document.getElementById(id);if(e)ob.observe(e)});return()=>ob.disconnect()},[opened])
+  async function loadShared(){
+    if(!supabase)return
+    const [{data:w},{data:s},{data:m},{data:f}]=await Promise.all([
+      supabase.from('wishes').select('*').order('created_at',{ascending:false}),supabase.from('story_photos').select('*').order('sort_order').order('created_at'),supabase.from('memory_photos').select('*').order('created_at',{ascending:false}),supabase.from('site_settings').select('value').eq('key','frame_url').maybeSingle()
+    ])
+    if(w)setWishes(w);if(s)setStory(s);if(m)setMemories(m);if(f?.value)setFrameUrl(f.value)
   }
+  const scrollTo=id=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'})
+  async function startCamera(){
+    try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});setStream(s);requestAnimationFrame(()=>{if(videoRef.current){videoRef.current.srcObject=s;videoRef.current.play()}});setNotice('Camera ready — smile ❤️')}
+    catch{setNotice('Please allow camera access and open the site over HTTPS.')}
+  }
+  function stopCamera(){stream?.getTracks().forEach(t=>t.stop());setStream(null)}
+  async function capture(){
+    if(!videoRef.current)return
+    const v=videoRef.current,c=document.createElement('canvas'),size=900;c.width=size;c.height=size;const ctx=c.getContext('2d');const scale=Math.max(size/v.videoWidth,size/v.videoHeight),w=v.videoWidth*scale,h=v.videoHeight*scale;ctx.drawImage(v,(size-w)/2,(size-h)/2,w,h);const data=c.toDataURL('image/jpeg',.92);setPhoto(data);stopCamera();setNotice('Photo captured — your frame is ready.')
+  }
+  async function makeFramedBlob(){
+    if(!photo)return null
+    const size=1200,c=document.createElement('canvas');c.width=size;c.height=size;const ctx=c.getContext('2d');const p=await loadImage(photo);const s=Math.max(size/p.width,size/p.height);ctx.drawImage(p,(size-p.width*s)/2,(size-p.height*s)/2,p.width*s,p.height*s)
+    if(frameUrl){const f=await loadImage(frameUrl);ctx.drawImage(f,0,0,size,size)}else{ctx.strokeStyle='#c49743';ctx.lineWidth=8;ctx.beginPath();ctx.arc(size/2,size/2,size*.47,0,Math.PI*2);ctx.stroke()}
+    return await new Promise(r=>c.toBlob(r,'image/jpeg',.94))
+  }
+  async function saveMemory(){
+    const blob=await makeFramedBlob();if(!blob)return
+    const local=URL.createObjectURL(blob);const a=document.createElement('a');a.href=local;a.download='Abanoub-Engy-Engagement.png';a.click();setTimeout(()=>URL.revokeObjectURL(local),1000)
+    if(supabase){setUploading(true);const path=`${crypto.randomUUID()}.jpg`;const up=await supabase.storage.from('memory-photos').upload(path,blob,{contentType:'image/jpeg'});if(!up.error){const url=supabase.storage.from('memory-photos').getPublicUrl(path).data.publicUrl;await supabase.from('memory_photos').insert({image_url:url});setMemories(x=>[{image_url:url},...x])}setUploading(false)}
+    setNotice('Downloaded to your phone' + (supabase?' and shared with everyone ❤️':' ❤️'))
+  }
+  async function submitWish(e){e.preventDefault();if(!wishName.trim()||!wishText.trim())return;const row={name:wishName.trim(),text:wishText.trim()};if(supabase){const {data,error}=await supabase.from('wishes').insert(row).select().single();if(error){setNotice('Could not send your wish. Please try again.');return}setWishes(x=>[data,...x])}else{setWishes(x=>[...x,{...row,id:crypto.randomUUID()}])}setWishName('');setWishText('');setNotice('Your wish is now part of our story ❤️')}
+  async function submitRsvp(e){e.preventDefault();if(!rsvpName.trim())return;if(supabase)await supabase.from('rsvps').insert({name:rsvpName.trim(),attendance,guests:Number(guests)});setRsvpName('');setNotice('Thank you for your response ❤️')}
+  return <main className="site-shell">
+    {!opened&&<motion.div className="opening"><div className="opening-glow"/><div className="opening-content"><p className="eyebrow">A little invitation to a beautiful beginning</p><h1>Abanoub <span>&</span> Engy</h1><p className="opening-subtitle">IT'S OUR ENGAGEMENT</p><p className="opening-date">THURSDAY · 27 AUGUST 2026</p><button className="primary-btn" onClick={()=>setOpened(true)}>Open Invitation <Heart size={16}/></button></div></motion.div>}
+    {opened&&musicOn&&<iframe className="music-frame" src={YOUTUBE_URL} title="Our song" allow="autoplay; encrypted-media"/>}
+    <nav className="top-nav"><button onClick={()=>scrollTo('home')} className="brand">A & E</button><div className="nav-title">OUR ENGAGEMENT</div><button className="music-btn" onClick={()=>setMusicOn(x=>!x)}>{musicOn?<Volume2 size={17}/>:<VolumeX size={17}/>}</button></nav>
+    <section id="home" className="hero section"><div className="hero-overlay"/><div className="hero-copy"><p className="eyebrow">Together with our families</p><h1>Abanoub <span>&</span><br/><em>Engy</em></h1><p className="hero-date">IT'S OUR ENGAGEMENT · 27 AUGUST 2026</p><div className="home-countdown">{Object.entries(timeLeft).map(([l,v])=><div key={l}><strong>{String(v).padStart(2,'0')}</strong><span>{l}</span></div>)}</div><button className="scroll-cue" onClick={()=>scrollTo('album')}>Scroll to our story <span>↓</span></button></div></section>
+    <section id="album" className="section paper album-section"><div className="section-inner"><p className="eyebrow">Album</p><h2>Our story,<br/><em>in moments.</em></h2><div className="story-grid">{story.length?story.map((p,i)=><img key={p.id||i} className={i===0?'story-img large':'story-img'} src={p.image_url} alt={`Our story ${i+1}`}/>):<><div className="story-placeholder large"><span>Upload your first story photo from /admin</span></div><div className="story-placeholder"><span>Our moment 02</span></div><div className="story-placeholder"><span>Our moment 03</span></div></>} </div><p className="gallery-note">Admin can add 4–5 photos directly from a mobile Gallery.</p></div></section>
+    <section id="location" className="section location-section"><div className="section-inner narrow"><p className="eyebrow">The day</p><h2>Meet us at<br/><em>St. George.</em></h2><div className="event-card"><span>THURSDAY · 27 AUGUST 2026</span><h3>8:00 PM</h3><p>ST. GEORGE CHURCH<br/>BANHA</p><div className="event-divider"/><p>CELEBRATION<br/><strong>ST. GEORGE CHURCH ROOFTOP</strong><br/>BANHA</p><a className="outline-btn" href={MAP_URL} target="_blank" rel="noreferrer"><MapPin size={16}/> Open Location</a></div></div></section>
+    <section id="camera" className="section camera-section"><div className="section-inner"><p className="eyebrow">Create your memory</p><h2>Take a photo<br/><em>with our frame.</em></h2><div className="camera-stage">{stream?<video ref={videoRef} className="camera-video" playsInline muted/>:photo?<img className="captured-photo" src={photo} alt="Captured memory"/>:<div className="frame-empty">Camera photo<br/>appears here</div>} {frameUrl&&<img className="real-frame" src={frameUrl} alt="Engagement frame"/>}<div className="frame-fallback">{!frameUrl&&<>IT'S OUR ENGAGEMENT<br/><b>ABANOUB <span>&</span> ENGY</b><small>THURSDAY · 27 AUGUST 2026</small></>}</div></div><div className="camera-actions">{!stream&&!photo&&<button className="primary-btn" onClick={startCamera}><Camera size={16}/> Take Photo</button>}{stream&&<button className="primary-btn" onClick={capture}><Camera size={16}/> Capture</button>}{photo&&<><button className="outline-btn light" onClick={startCamera}>Retake</button><button className="download-btn" disabled={uploading} onClick={saveMemory}>{uploading?'Saving…':'Download + Share Photo'}</button></>}</div><p className="camera-note">Camera only — no Gallery picker here. The framed photo is shared to the Memory Wall after download.</p>{notice&&<p className="notice">{notice}</p>}</div></section>
+    <section className="section memories-section"><div className="section-inner"><p className="eyebrow">Memory wall</p><h2>Moments from<br/><em>our guests.</em></h2><div className="memory-grid">{memories.map((m,i)=><img key={m.id||i} src={m.image_url} alt="Guest memory"/>)}</div>{!memories.length&&<p className="gallery-note">Guest photos will appear here for everyone.</p>}</div></section>
+    <section id="rsvp" className="section paper rsvp-section"><div className="section-inner narrow"><p className="eyebrow">RSVP</p><h2>Will you<br/><em>join us?</em></h2><form className="invite-form" onSubmit={submitRsvp}><input value={rsvpName} onChange={e=>setRsvpName(e.target.value)} placeholder="Your name" required/><div className="choice-row"><button type="button" className={attendance?'choice active':'choice'} onClick={()=>setAttendance(true)}>Yes, I'll be there</button><button type="button" className={!attendance?'choice active':'choice'} onClick={()=>setAttendance(false)}>Sorry, I can't</button></div><select value={guests} onChange={e=>setGuests(e.target.value)}><option value="1">1 Guest</option><option value="2">2 Guests</option><option value="3">3 Guests</option><option value="4">4 Guests</option></select><button className="primary-btn dark" type="submit">Confirm RSVP <Send size={15}/></button></form></div></section>
+    <section id="wishes" className="section wishes-section"><div className="section-inner narrow"><p className="eyebrow">A little love from you</p><h2>Leave us<br/><em>a wish.</em></h2><form className="invite-form wishes-form" onSubmit={submitWish}><input value={wishName} onChange={e=>setWishName(e.target.value)} placeholder="Your name" required/><textarea value={wishText} onChange={e=>setWishText(e.target.value)} placeholder="Write your wish for Abanoub & Engy..." rows="4" required/><button className="primary-btn dark" type="submit">Send Your Wish <MessageCircleHeart size={15}/></button></form><div className="wishes-list">{wishes.map((w,i)=><article key={w.id||i}><Heart size={14} fill="currentColor"/><p>“{w.text}”</p><span>— {w.name}</span></article>)}</div></div></section>
+    <section className="section final"><div className="final-content"><p className="eyebrow">Why we invited you</p><h2>Be part of<br/><em>our beginning.</em></h2><p className="final-message">We don't want you to simply attend our engagement.<br/>We want you to be part of the beginning of our story.</p><div className="heart-line"><Heart size={16} fill="currentColor"/></div><h3>Abanoub & Engy</h3><p>27 · 08 · 2026</p></div></section>
+    <div className="bottom-nav">{navItems.map(({id,label,icon:Icon})=><button key={id} className={active===id?'active':''} onClick={()=>scrollTo(id)}><Icon size={19}/><span>{label}</span></button>)}</div><footer>Made with love · Abanoub & Engy</footer>
+  </main>
 }
-
-function App() {
-  const [opened, setOpened] = useState(false)
-  const [muted, setMuted] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft())
-  const [active, setActive] = useState('home')
-  const [selectedPhoto, setSelectedPhoto] = useState(null)
-  const [wishes, setWishes] = useState(() => JSON.parse(localStorage.getItem('engy-wishes') || '[]'))
-  const [wishName, setWishName] = useState('')
-  const [wishText, setWishText] = useState('')
-  const [rsvpName, setRsvpName] = useState('')
-  const [attendance, setAttendance] = useState('yes')
-  const [guests, setGuests] = useState('1')
-  const fileRef = useRef(null)
-
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(getTimeLeft()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    const sections = ['home', 'album', 'location', 'camera', 'rsvp', 'wishes']
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-      if (visible) setActive(visible.target.id)
-    }, { threshold: [0.25, 0.55] })
-    sections.forEach(id => { const el = document.getElementById(id); if (el) observer.observe(el) })
-    return () => observer.disconnect()
-  }, [opened])
-
-  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-
-  const handlePhoto = (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setSelectedPhoto(reader.result)
-    reader.readAsDataURL(file)
-    event.target.value = ''
-  }
-
-  const downloadPhoto = () => {
-    if (!selectedPhoto) return
-    const image = new Image()
-    image.onload = () => {
-      const size = 1600
-      const canvas = document.createElement('canvas')
-      canvas.width = size
-      canvas.height = size
-      const ctx = canvas.getContext('2d')
-      const scale = Math.max(size / image.width, size / image.height)
-      const w = image.width * scale
-      const h = image.height * scale
-      ctx.drawImage(image, (size - w) / 2, (size - h) / 2, w, h)
-      ctx.save()
-      ctx.globalCompositeOperation = 'destination-over'
-      ctx.fillStyle = '#f5eee4'
-      ctx.fillRect(0, 0, size, size)
-      ctx.restore()
-      const a = document.createElement('a')
-      a.download = 'Abanoub-Engy-Engagement.png'
-      a.href = canvas.toDataURL('image/png')
-      a.click()
-    }
-    image.src = selectedPhoto
-  }
-
-  const submitWish = (e) => {
-    e.preventDefault()
-    if (!wishName.trim() || !wishText.trim()) return
-    const next = [{ name: wishName.trim(), text: wishText.trim() }, ...wishes]
-    setWishes(next)
-    localStorage.setItem('engy-wishes', JSON.stringify(next))
-    setWishName('')
-    setWishText('')
-  }
-
-  const submitRsvp = (e) => {
-    e.preventDefault()
-    if (!rsvpName.trim()) return
-    localStorage.setItem('engy-rsvp', JSON.stringify({ name: rsvpName, attendance, guests }))
-    alert('Thank you for your response ❤️')
-    setRsvpName('')
-  }
-
-  return (
-    <main className="site-shell">
-      {!opened && (
-        <motion.div className="opening" initial={{ opacity: 1 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="opening-glow" />
-          <div className="opening-content">
-            <p className="eyebrow">A little invitation to a beautiful beginning</p>
-            <h1>Abanoub <span>&</span> Engy</h1>
-            <p className="opening-subtitle">IT'S OUR ENGAGEMENT</p>
-            <p className="opening-date">THURSDAY · 27 AUGUST 2026</p>
-            <button className="primary-btn" onClick={() => setOpened(true)}>Open Invitation <Heart size={16} /></button>
-          </div>
-        </motion.div>
-      )}
-
-      <nav className="top-nav">
-        <button onClick={() => scrollTo('home')} className="brand">A & E</button>
-        <div className="nav-title">OUR ENGAGEMENT</div>
-        <button className="music-btn" onClick={() => setMuted(!muted)} aria-label="Toggle music">
-          {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
-        </button>
-      </nav>
-
-      <section id="home" className="hero section">
-        <div className="hero-overlay" />
-        <div className="hero-copy">
-          <p className="eyebrow">Together with our families</p>
-          <h1>Abanoub <span>&</span><br /><em>Engy</em></h1>
-          <p className="hero-date">IT'S OUR ENGAGEMENT · 27 AUGUST 2026</p>
-          <div className="home-countdown">
-            {Object.entries(timeLeft).map(([label, value]) => <div key={label}><strong>{String(value).padStart(2, '0')}</strong><span>{label}</span></div>)}
-          </div>
-          <button className="scroll-cue" onClick={() => scrollTo('album')}>Scroll to our story <span>↓</span></button>
-        </div>
-      </section>
-
-      <section id="album" className="section paper album-section">
-        <div className="section-inner">
-          <p className="eyebrow">Album</p>
-          <h2>Our story,<br /><em>in moments.</em></h2>
-          <div className="story-grid">
-            <div className="story-placeholder large"><span>Your Photo 01</span></div>
-            <div className="story-placeholder"><span>Your Photo 02</span></div>
-            <div className="story-placeholder"><span>Your Photo 03</span></div>
-            <div className="story-placeholder wide"><span>Your Photo 04</span></div>
-          </div>
-          <p className="gallery-note">Your 4–5 personal photos will be uploaded here from your Admin page.</p>
-        </div>
-      </section>
-
-      <section id="location" className="section location-section">
-        <div className="section-inner narrow">
-          <p className="eyebrow">The day</p>
-          <h2>Meet us at<br /><em>St. George.</em></h2>
-          <div className="event-card">
-            <span>THURSDAY · 27 AUGUST 2026</span>
-            <h3>8:00 PM</h3>
-            <p>ST. GEORGE CHURCH<br />BANHA</p>
-            <div className="event-divider" />
-            <p>CELEBRATION<br /><strong>ST. GEORGE CHURCH ROOFTOP</strong><br />BANHA</p>
-            <a className="outline-btn" href={MAP_URL} target="_blank" rel="noreferrer"><MapPin size={16} /> Open Location</a>
-          </div>
-        </div>
-      </section>
-
-      <section id="camera" className="section camera-section">
-        <div className="section-inner">
-          <p className="eyebrow">Create your memory</p>
-          <h2>Take a photo<br /><em>with our frame.</em></h2>
-          <div className="frame-stage">
-            <div className="frame-photo">{selectedPhoto ? <img src={selectedPhoto} alt="Your memory" /> : <div className="frame-empty">Your photo<br />goes here</div>}</div>
-            <div className="frame-ring">
-              <div className="frame-top">IT'S OUR ENGAGEMENT</div>
-              <div className="frame-icons">♡　◇　♡</div>
-              <div className="frame-bottom">ABANOUB <span>&</span> ENGY</div>
-              <div className="frame-date">THURSDAY · 27 AUGUST 2026</div>
-            </div>
-          </div>
-          <div className="camera-actions">
-            <button className="primary-btn" onClick={() => fileRef.current?.click()}><Camera size={16} /> Take Photo</button>
-            <button className="outline-btn light" onClick={() => fileRef.current?.click()}>Choose from Gallery</button>
-            {selectedPhoto && <button className="download-btn" onClick={downloadPhoto}>Download Framed Photo</button>}
-          </div>
-          <input ref={fileRef} hidden type="file" accept="image/*" capture="user" onChange={handlePhoto} />
-          <p className="camera-note">Your photo stays on your device until you choose to download it.</p>
-        </div>
-      </section>
-
-      <section id="rsvp" className="section paper rsvp-section">
-        <div className="section-inner narrow">
-          <p className="eyebrow">RSVP</p>
-          <h2>Will you<br /><em>join us?</em></h2>
-          <form className="invite-form" onSubmit={submitRsvp}>
-            <input value={rsvpName} onChange={e => setRsvpName(e.target.value)} placeholder="Your name" required />
-            <div className="choice-row"><button type="button" className={attendance === 'yes' ? 'choice active' : 'choice'} onClick={() => setAttendance('yes')}>Yes, I'll be there</button><button type="button" className={attendance === 'no' ? 'choice active' : 'choice'} onClick={() => setAttendance('no')}>Sorry, I can't</button></div>
-            <select value={guests} onChange={e => setGuests(e.target.value)}><option value="1">1 Guest</option><option value="2">2 Guests</option><option value="3">3 Guests</option><option value="4">4 Guests</option></select>
-            <button className="primary-btn dark" type="submit">Confirm RSVP <Send size={15} /></button>
-          </form>
-        </div>
-      </section>
-
-      <section id="wishes" className="section wishes-section">
-        <div className="section-inner narrow">
-          <p className="eyebrow">A little love from you</p>
-          <h2>Leave us<br /><em>a wish.</em></h2>
-          <form className="invite-form wishes-form" onSubmit={submitWish}>
-            <input value={wishName} onChange={e => setWishName(e.target.value)} placeholder="Your name" required />
-            <textarea value={wishText} onChange={e => setWishText(e.target.value)} placeholder="Write your wish for Abanoub & Engy..." rows="4" required />
-            <button className="primary-btn dark" type="submit">Send Your Wish <MessageCircleHeart size={15} /></button>
-          </form>
-          <div className="wishes-list">{wishes.slice(0, 12).map((wish, i) => <article key={i}><Heart size={14} fill="currentColor" /><p>“{wish.text}”</p><span>— {wish.name}</span></article>)}</div>
-        </div>
-      </section>
-
-      <section className="section final">
-        <div className="final-content">
-          <p className="eyebrow">Why we invited you</p>
-          <h2>Be part of<br /><em>our beginning.</em></h2>
-          <p className="final-message">We don't want you to simply attend our engagement.<br />We want you to be part of the beginning of our story.</p>
-          <div className="heart-line"><Heart size={16} fill="currentColor" /></div>
-          <h3>Abanoub & Engy</h3>
-          <p>27 · 08 · 2026</p>
-        </div>
-      </section>
-
-      <div className="bottom-nav">
-        {navItems.map(({ id, label, icon: Icon }) => <button key={id} className={active === id ? 'active' : ''} onClick={() => scrollTo(id)}><Icon size={19} /><span>{label}</span></button>)}
-      </div>
-      <footer>Made with love · Abanoub & Engy</footer>
-    </main>
-  )
+function loadImage(src){return new Promise((resolve,reject)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>resolve(i);i.onerror=reject;i.src=src})}
+function Admin(){
+ const [session,setSession]=useState(null),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[story,setStory]=useState([]),[frame,setFrame]=useState(''),[status,setStatus]=useState(''),[loading,setLoading]=useState(false)
+ useEffect(()=>{if(!supabase)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));load();return()=>subscription.unsubscribe()},[])
+ async function load(){if(!supabase)return;const {data}=await supabase.from('story_photos').select('*').order('sort_order').order('created_at');setStory(data||[]);const {data:f}=await supabase.from('site_settings').select('value').eq('key','frame_url').maybeSingle();setFrame(f?.value||'')}
+ async function login(e){e.preventDefault();const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)setStatus(error.message);else setSession(data.session)}
+ async function uploadStory(e){const files=[...e.target.files];for(const file of files){setLoading(true);const path=`${crypto.randomUUID()}-${file.name.replace(/[^a-z0-9._-]/gi,'_')}`;const up=await supabase.storage.from('story-photos').upload(path,file,{upsert:false});if(!up.error){const url=supabase.storage.from('story-photos').getPublicUrl(path).data.publicUrl;await supabase.from('story_photos').insert({image_url:url,sort_order:story.length});}}setLoading(false);e.target.value='';load()}
+ async function uploadFrame(e){const file=e.target.files?.[0];if(!file)return;setLoading(true);const path=`frame-${Date.now()}.${file.name.split('.').pop()}`;const up=await supabase.storage.from('site-assets').upload(path,file,{upsert:true});if(up.error)setStatus(up.error.message);else{const url=supabase.storage.from('site-assets').getPublicUrl(path).data.publicUrl;await supabase.from('site_settings').upsert({key:'frame_url',value:url});setFrame(url);setStatus('Frame updated for all visitors ❤️')}setLoading(false)}
+ async function removeStory(p){const path=p.image_url.split('/story-photos/')[1];await supabase.storage.from('story-photos').remove([path]);await supabase.from('story_photos').delete().eq('id',p.id);load()}
+ if(!hasSupabase)return <AdminMessage text="Supabase is not connected yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel."/>
+ if(!session)return <div className="admin-page"><form className="admin-card" onSubmit={login}><p className="eyebrow">Private access</p><h1>Engagement Admin</h1><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" type="email" required/><input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" type="password" required/><button className="primary-btn dark" type="submit"><LogIn size={15}/> Sign in</button>{status&&<p className="notice">{status}</p>}</form></div>
+ return <div className="admin-page"><div className="admin-card wide"><div className="admin-head"><div><p className="eyebrow">Private access</p><h1>Abanoub & Engy</h1></div><button className="outline-btn" onClick={()=>supabase.auth.signOut()}>Sign out</button></div><h2>Our Story Photos</h2><label className="admin-upload"><ImagePlus size={20}/><span>{loading?'Uploading…':'Add photos from mobile Gallery'}</span><input hidden type="file" accept="image/*" multiple onChange={uploadStory}/></label><div className="admin-grid">{story.map(p=><div key={p.id}><img src={p.image_url}/><button onClick={()=>removeStory(p)}><Trash2 size={14}/></button></div>)}</div><h2>Camera Frame</h2><label className="admin-upload"><Upload size={20}/><span>Upload the exact frame image you sent me</span><input hidden type="file" accept="image/*" onChange={uploadFrame}/></label>{frame&&<img className="admin-frame-preview" src={frame} alt="Current frame"/>}<p className="admin-help">Once uploaded, the frame is used automatically by the Camera section for every visitor.</p></div></div>
 }
-
+function AdminMessage({text}){return <div className="admin-page"><div className="admin-card"><h1>Admin setup</h1><p>{text}</p></div></div>}
 export default App
