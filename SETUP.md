@@ -1,36 +1,55 @@
-# Engagement V2 setup
+# Abanoub & Engy Engagement — V2
 
-## 1. Supabase
-Create a free Supabase project, open SQL Editor, and run `supabase/schema.sql`.
+## Public invitation link
+Use the Vercel project domain root:
 
-Create one Auth user for the couple (email + password). This account is used only at `/admin`.
+`https://YOUR-DOMAIN.vercel.app/`
 
-## 2. Vercel environment variables
-In Vercel → Project → Settings → Environment Variables, add:
+This is the link you send to guests.
 
-- `VITE_SUPABASE_URL` = Supabase Project URL
-- `VITE_SUPABASE_ANON_KEY` = Supabase anon/public key
-
-Redeploy after saving.
-
-## 3. Admin
-Open:
+## Private admin link
+Use:
 
 `https://YOUR-DOMAIN.vercel.app/admin`
 
-Sign in with the Supabase Auth user.
+Only the couple's Supabase email/password account should be used here. The admin can manage Story photos, the frame, RSVP records, Wishes, and Guest Memory photos.
 
-From the Admin page you can:
-- Add/delete Story photos directly from your mobile Gallery.
-- Upload the exact circular frame image from your mobile Gallery once.
+## 1. Supabase
+Create a free Supabase project. Open **SQL Editor** and run the complete file `supabase/schema.sql`.
 
-After the frame is uploaded, every visitor uses the same frame automatically.
+Then go to **Authentication → Providers / Anonymous Sign-Ins** and enable **Anonymous Sign-Ins**. Guest camera users use anonymous accounts so each guest can delete only their own Memory Wall photo. Supabase documents that anonymous users use the authenticated database role and expose an `is_anonymous` JWT claim, so the SQL policies explicitly distinguish guests from the permanent admin account.
 
-## 4. Guest Camera flow
-The Camera section does NOT show a Gallery picker. It requests the visitor's mobile camera, captures the photo, places it inside the admin-provided frame, lets the visitor download it, and uploads the framed result to the public Memory Wall.
+Create one permanent Auth user for Abanoub/Engy under **Authentication → Users**. Use its email/password only at `/admin`.
 
-## 5. Wishes
-Wishes are stored in Supabase and are public. Every visitor loads the shared wishes from the database, so they are no longer device-local.
+## 2. Vercel environment variables
+In **Vercel → Project → Settings → Environment Variables**, add:
 
-## 6. YouTube music
-The Open Invitation action mounts the supplied YouTube embed with autoplay. Some browsers/phones can still block autoplay with sound; the music button lets the visitor toggle the embedded player. This is a browser restriction, not a Vercel issue.
+- `VITE_SUPABASE_URL` = Supabase Project URL
+- `VITE_SUPABASE_ANON_KEY` = Supabase publishable/anon key
+
+Do not put a Supabase service-role/secret key in Vercel frontend variables.
+
+Redeploy after saving.
+
+## 3. Upload the exact circular frame
+Open `/admin` on the phone, log in, go to **Camera Frame**, and upload the exact frame image supplied by Abanoub & Engy. The website then uses that same frame for every guest.
+
+## 4. Story photos
+From `/admin` on the phone, open **Our Story → Add photos from mobile Gallery**. You can add 4–5 photos or more and remove any photo later. All visitors see the same Story gallery.
+
+## 5. Guest camera flow
+The public invitation has **Camera only** — no Gallery picker. The guest allows the front/back mobile camera, captures a photo, sees it inside the circular frame, downloads the framed image to their phone, and the framed image is uploaded to the shared Memory Wall.
+
+Every visitor can download every Memory Wall photo. The guest who created a photo can delete their own photo; another guest cannot delete it. The private admin can delete any Memory Wall photo.
+
+## 6. Wishes
+Wishes are stored in Supabase and publicly readable. When one guest submits a Wish, it is shared in the database and appears to everyone after loading the invitation. Admin can remove Wishes from `/admin`.
+
+## 7. RSVP
+Guests submit name, attendance, and number of guests. Only the permanent admin account can read/delete RSVP records in the database and the Admin dashboard shows the total.
+
+## 8. Music
+The Open Invitation action mounts the supplied YouTube embed:
+`https://youtu.be/cNGjD0VG4R8`
+
+The browser may still block autoplay with sound on some devices. Because the guest has just tapped **Open Invitation**, many browsers will allow playback, but no website can override a browser's autoplay policy. The music button can toggle playback.
