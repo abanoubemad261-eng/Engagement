@@ -1,0 +1,118 @@
+/* Open Invitation — warm beige curtain reveal */
+.opening {
+  background: #e9ddce !important;
+  color: #3d3028 !important;
+}
+
+.opening .curtain {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.20), transparent 14%, rgba(120,91,63,.10) 48%, transparent 72%, rgba(255,255,255,.16)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.10) 0 2px, rgba(125,95,66,.045) 3px 7px),
+    linear-gradient(180deg, #eadcca 0%, #d9c5ae 50%, #e8d9c7 100%) !important;
+  box-shadow: inset 0 0 80px rgba(92,65,42,.12);
+  border-color: rgba(116,88,61,.18) !important;
+}
+
+.opening .curtain::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 22%;
+  opacity: .35;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
+  pointer-events: none;
+}
+
+.opening .curtain-left::after { right: 8%; }
+.opening .curtain-right::after { left: 8%; }
+
+.opening-content {
+  color: #3d3028 !important;
+  text-shadow: 0 1px 20px rgba(255,255,255,.35);
+}
+
+.opening-content .eyebrow,
+.opening-content small {
+  color: #5f4a39;
+}
+
+.opening-content > p:not(.eyebrow) {
+  color: #4b392b;
+}
+
+.opening-content .primary-btn {
+  color: #4b392b;
+  border-color: rgba(75,57,43,.55);
+  background: rgba(255,255,255,.14);
+  box-shadow: 0 8px 30px rgba(90,65,42,.10);
+}
+
+.opening-content .primary-btn:hover {
+  background: #4b392b;
+  color: #fffaf4;
+}
+
+/* The actual reveal happens immediately after Open Invitation is pressed.
+   This keeps the React screen transition instant while giving the user a
+   real center-to-sides curtain animation over the Home section. */
+.hero {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: inset 0 0 90px rgba(74,52,35,.16);
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.22), transparent 12%, rgba(112,81,54,.11) 47%, transparent 76%, rgba(255,255,255,.18)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.09) 0 2px, rgba(115,84,56,.045) 3px 8px),
+    linear-gradient(180deg, #eadcca 0%, #d8c3aa 50%, #e7d7c4 100%);
+  will-change: transform;
+}
+
+.hero::before {
+  left: 0;
+  transform-origin: left center;
+  animation: invitationCurtainLeft 1.45s cubic-bezier(.77,0,.18,1) forwards;
+}
+
+.hero::after {
+  right: 0;
+  transform-origin: right center;
+  animation: invitationCurtainRight 1.45s cubic-bezier(.77,0,.18,1) forwards;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  animation: invitationHomeReveal 1.05s .55s both;
+}
+
+@keyframes invitationCurtainLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes invitationCurtainRight {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes invitationHomeReveal {
+  0% { opacity: 0; transform: translateY(12px) scale(.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero::before { transform: translateX(-100%); animation: none; }
+  .hero::after { transform: translateX(100%); animation: none; }
+  .hero-copy { animation: none; }
+}
