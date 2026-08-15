@@ -1,3 +1,4 @@
+import {useEffect,useState} from 'react'
 import {Album,Camera,Heart,MapPin,MessageCircleHeart,Send,Volume2,VolumeX,Trash2,Upload,ImagePlus,LogOut,Download,RefreshCw,Users,Save} from 'lucide-react'
 import {supabase} from './lib/supabase'
 const EVENT_DATE=new Date('2026-08-27T20:00:00+03:00'),MAP_URL='https://maps.app.goo.gl/5ZTEqBQ7FyvxmEnp9?g_st=iw',YT='https://www.youtube-nocookie.com/embed/cNGjD0VG4R8?autoplay=1&loop=1&playlist=cNGjD0VG4R8&playsinline=1&rel=0'
