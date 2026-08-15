@@ -1,0 +1,1 @@
+The saved-photo rendering must clip the camera image to the exact Admin camera area before drawing it. This marker is intentionally kept separate until App.jsx is updated with the real canvas clipping implementation.
