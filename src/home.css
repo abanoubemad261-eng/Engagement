@@ -1,5 +1,8 @@
-/* Home-only refinements: elegant names + animated countdown */
+/* Home-only refinements */
 .hero-copy{animation:homeContentReveal 1.2s cubic-bezier(.22,1,.36,1) both;}
+/* Keep Home intentionally minimal */
+.hero-reveal{display:none!important;}
+.scroll-cue{display:none!important;}
 .hero h1{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;letter-spacing:.015em;perspective:900px;}
 .hero h1 span,.hero h1 em{position:relative;display:block;line-height:.78;will-change:transform,opacity;}
 .hero h1 span{animation:homeNameLeft 1.25s .15s cubic-bezier(.22,1,.36,1) both;}
@@ -8,9 +11,11 @@
 .hero h1 i:before,.hero h1 i:after{content:'';position:absolute;top:50%;width:72px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45));}
 .hero h1 i:before{right:100%;margin-right:10px;transform:scaleX(-1);}
 .hero h1 i:after{left:100%;margin-left:10px;}
-.hero-date{animation:homeDateReveal .9s .75s ease both;}
-.countdown-wrap{position:relative;margin-top:58px;animation:countdownReveal 1s .9s cubic-bezier(.22,1,.36,1) both;}
-.countdown-wrap>p{margin-bottom:15px;}
+/* Replace the old combined date line with the exact requested 3-line event info */
+.hero-date{font-size:0!important;line-height:1.55;letter-spacing:0!important;margin-top:22px;animation:homeDateReveal .9s .75s ease both;}
+.hero-date:before{content:'THURSDAY\\A27 AUGUST 2026\\A8:00 PM';white-space:pre;display:block;font-size:clamp(12px,1.4vw,15px);line-height:2;letter-spacing:.24em;font-weight:500;}
+.countdown-wrap{position:relative;margin-top:42px;animation:countdownReveal 1s .9s cubic-bezier(.22,1,.36,1) both;}
+.countdown-wrap>p{display:none!important;}
 .home-countdown{position:relative;gap:10px;border:0;}
 .count-cell{position:relative;min-width:0;padding:18px 8px 15px;border:1px solid rgba(255,255,255,.23)!important;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.025));backdrop-filter:blur(8px);overflow:hidden;}
 .count-cell:before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.11) 50%,transparent 80%);transform:translateX(-130%);animation:countShine 4.5s 1.5s ease-in-out infinite;pointer-events:none;}
@@ -24,5 +29,5 @@
 @keyframes countdownReveal{from{opacity:0;transform:translateY(25px) scale(.96)}to{opacity:1;transform:none}}
 @keyframes countFlip{0%{opacity:0;transform:rotateX(-85deg) translateY(-8px)}55%{opacity:1;transform:rotateX(12deg)}100%{opacity:1;transform:rotateX(0) translateY(0)}}
 @keyframes countShine{0%,65%,100%{transform:translateX(-130%)}82%{transform:translateX(130%)}}
-@media(max-width:700px){.hero h1{font-size:72px;gap:1px}.hero h1 i{width:46px;height:46px;font-size:.44em}.hero h1 i:before,.hero h1 i:after{width:34px}.home-countdown{gap:5px}.count-cell{padding:15px 4px 13px}.count-cell strong{font-size:31px}.count-cell span{font-size:7px;letter-spacing:.1em}}
+@media(max-width:700px){.hero h1{font-size:72px;gap:1px}.hero h1 i{width:46px;height:46px;font-size:.44em}.hero h1 i:before,.hero h1 i:after{width:34px}.hero-date:before{font-size:10px;letter-spacing:.16em}.home-countdown{gap:5px}.count-cell{padding:15px 4px 13px}.count-cell strong{font-size:31px}.count-cell span{font-size:7px;letter-spacing:.1em}}
 @media(prefers-reduced-motion:reduce){.hero-copy,.hero h1 span,.hero h1 em,.hero h1 i,.hero-date,.countdown-wrap,.count-cell strong,.count-cell:before{animation:none!important}.hero h1 span,.hero h1 em,.hero h1 i,.hero-date,.countdown-wrap{opacity:1;transform:none;filter:none}}
