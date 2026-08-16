@@ -1,38 +1,33 @@
 /* Home-only refinements */
 .hero-copy{animation:homeContentReveal 1.2s cubic-bezier(.22,1,.36,1) both;}
-/* Keep Home intentionally minimal */
-.hero-reveal{display:none!important;}
-.scroll-cue{display:none!important;}
-/* Use the uploaded portrait as a Home-only background and show more of the full image. */
+/* Home contains only the couple names and the live countdown. */
+.hero-reveal,.hero-date,.scroll-cue{display:none!important;}
+/* Keep the uploaded photo as the Home-only background and show more of the full image. */
 .hero{background-color:#d7c5af!important;background-image:linear-gradient(180deg,rgba(34,29,24,.08),rgba(34,29,24,.24)),url('/0.jpeg')!important;background-size:contain!important;background-position:center center!important;background-repeat:no-repeat!important;}
 .hero-copy{position:relative;z-index:2;}
-/* Elegant beige typography, soft enough to sit naturally over the photo. */
-.hero .eyebrow,.hero h1,.hero h1 i,.hero-date,.countdown-wrap,.count-cell{color:#dcc5a8;}
-.hero h1{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;letter-spacing:.015em;perspective:900px;text-shadow:0 2px 18px rgba(35,28,22,.24);}
+/* Dark warm beige typography for the names and countdown. */
+.hero h1,.hero h1 i,.countdown-wrap,.count-cell,.count-cell strong,.count-cell span{color:#8b6f52;}
+.hero h1{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;letter-spacing:.015em;perspective:900px;text-shadow:0 2px 18px rgba(35,28,22,.18);}
 .hero h1 span,.hero h1 em{position:relative;display:block;line-height:.78;will-change:transform,opacity;}
 .hero h1 span{animation:homeNameLeft 1.25s .15s cubic-bezier(.22,1,.36,1) both;}
 .hero h1 em{animation:homeNameRight 1.25s .3s cubic-bezier(.22,1,.36,1) both;}
-.hero h1 i{position:relative;z-index:2;display:grid;place-items:center;width:58px;height:58px;margin:-2px 0 -5px;border:1px solid rgba(220,197,168,.58);border-radius:50%;font-size:.42em;line-height:1;font-style:italic;background:rgba(35,31,28,.13);backdrop-filter:blur(5px);animation:homeAmpersand 1s .55s cubic-bezier(.22,1,.36,1) both;}
-.hero h1 i:before,.hero h1 i:after{content:'';position:absolute;top:50%;width:72px;height:1px;background:linear-gradient(90deg,transparent,rgba(220,197,168,.58));}
+.hero h1 i{position:relative;z-index:2;display:grid;place-items:center;width:58px;height:58px;margin:-2px 0 -5px;border:1px solid rgba(139,111,82,.52);border-radius:50%;font-size:.42em;line-height:1;font-style:italic;background:rgba(255,248,238,.13);backdrop-filter:blur(5px);animation:homeAmpersand 1s .55s cubic-bezier(.22,1,.36,1) both;}
+.hero h1 i:before,.hero h1 i:after{content:'';position:absolute;top:50%;width:72px;height:1px;background:linear-gradient(90deg,transparent,rgba(139,111,82,.52));}
 .hero h1 i:before{right:100%;margin-right:10px;transform:scaleX(-1);}
 .hero h1 i:after{left:100%;margin-left:10px;}
-/* Replace the old combined date line with the exact requested 3-line event info */
-.hero-date{font-size:0!important;line-height:1.55;letter-spacing:0!important;margin-top:22px;animation:homeDateReveal .9s .75s ease both;}
-.hero-date:before{content:'THURSDAY\\A27 AUGUST 2026\\A8:00 PM';white-space:pre;display:block;font-size:clamp(12px,1.4vw,15px);line-height:2;letter-spacing:.24em;font-weight:500;}
 .countdown-wrap{position:relative;margin-top:42px;animation:countdownReveal 1s .9s cubic-bezier(.22,1,.36,1) both;}
 .countdown-wrap>p{display:none!important;}
 .home-countdown{position:relative;gap:10px;border:0;}
-.count-cell{position:relative;min-width:0;padding:18px 8px 15px;border:1px solid rgba(220,197,168,.48)!important;background:rgba(255,248,238,.10);backdrop-filter:blur(8px);overflow:hidden;}
-.count-cell:before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(220,197,168,.14) 50%,transparent 80%);transform:translateX(-130%);animation:countShine 4.5s 1.5s ease-in-out infinite;pointer-events:none;}
-.count-cell strong{position:relative;display:block;font-size:clamp(36px,5vw,58px);line-height:1;letter-spacing:.02em;color:#dcc5a8;text-shadow:0 4px 20px rgba(35,28,22,.22);transform-origin:50% 0;animation:countFlip .65s cubic-bezier(.22,1,.36,1);}
-.count-cell span{position:relative;display:block;margin-top:8px;color:#dcc5a8;}
+.count-cell{position:relative;min-width:0;padding:18px 8px 15px;border:1px solid rgba(139,111,82,.48)!important;background:rgba(255,248,238,.10);backdrop-filter:blur(8px);overflow:hidden;}
+.count-cell:before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(139,111,82,.13) 50%,transparent 80%);transform:translateX(-130%);animation:countShine 4.5s 1.5s ease-in-out infinite;pointer-events:none;}
+.count-cell strong{position:relative;display:block;font-size:clamp(36px,5vw,58px);line-height:1;letter-spacing:.02em;text-shadow:0 4px 20px rgba(35,28,22,.18);transform-origin:50% 0;animation:countFlip .65s cubic-bezier(.22,1,.36,1);}
+.count-cell span{position:relative;display:block;margin-top:8px;}
 @keyframes homeContentReveal{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes homeNameLeft{from{opacity:0;transform:translate3d(-80px,20px,0) rotateY(18deg);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
 @keyframes homeNameRight{from{opacity:0;transform:translate3d(80px,20px,0) rotateY(-18deg);filter:blur(6px)}to{opacity:1;transform:none;filter:blur(0)}}
 @keyframes homeAmpersand{from{opacity:0;transform:scale(.25) rotate(-35deg)}65%{transform:scale(1.08) rotate(5deg)}to{opacity:1;transform:scale(1) rotate(0)}}
-@keyframes homeDateReveal{from{opacity:0;letter-spacing:.45em;transform:translateY(12px)}to{opacity:1;letter-spacing:.24em;transform:none}}
 @keyframes countdownReveal{from{opacity:0;transform:translateY(25px) scale(.96)}to{opacity:1;transform:none}}
 @keyframes countFlip{0%{opacity:0;transform:rotateX(-85deg) translateY(-8px)}55%{opacity:1;transform:rotateX(12deg)}100%{opacity:1;transform:rotateX(0) translateY(0)}}
 @keyframes countShine{0%,65%,100%{transform:translateX(-130%)}82%{transform:translateX(130%)}}
-@media(max-width:700px){.hero{background-size:contain!important;background-position:center center!important;}.hero h1{font-size:72px;gap:1px}.hero h1 i{width:46px;height:46px;font-size:.44em}.hero h1 i:before,.hero h1 i:after{width:34px}.hero-date:before{font-size:10px;letter-spacing:.16em}.home-countdown{gap:5px}.count-cell{padding:15px 4px 13px}.count-cell strong{font-size:31px}.count-cell span{font-size:7px;letter-spacing:.1em}}
-@media(prefers-reduced-motion:reduce){.hero-copy,.hero h1 span,.hero h1 em,.hero h1 i,.hero-date,.countdown-wrap,.count-cell strong,.count-cell:before{animation:none!important}.hero h1 span,.hero h1 em,.hero h1 i,.hero-date,.countdown-wrap{opacity:1;transform:none;filter:none}}
+@media(max-width:700px){.hero{background-size:contain!important;background-position:center center!important;}.hero h1{font-size:72px;gap:1px}.hero h1 i{width:46px;height:46px;font-size:.44em}.hero h1 i:before,.hero h1 i:after{width:34px}.home-countdown{gap:5px}.count-cell{padding:15px 4px 13px}.count-cell strong{font-size:31px}.count-cell span{font-size:7px;letter-spacing:.1em}}
+@media(prefers-reduced-motion:reduce){.hero-copy,.hero h1 span,.hero h1 em,.hero h1 i,.countdown-wrap,.count-cell strong,.count-cell:before{animation:none!important}.hero h1 span,.hero h1 em,.hero h1 i,.countdown-wrap{opacity:1;transform:none;filter:none}}
