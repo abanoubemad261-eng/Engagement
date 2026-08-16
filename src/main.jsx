@@ -5,6 +5,7 @@ import './styles.css'
 import './opening.css'
 import './home.css'
 import './location.css'
+import './wishes-private.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
