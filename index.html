@@ -15,7 +15,32 @@
         background-position: center center !important;
         background-repeat: no-repeat !important;
       }
+
+      /* Music is started from Open Invitation; no separate music control needed. */
+      .music-btn { display: none !important; }
     </style>
+    <script>
+      // iOS/Safari does not always honor the download attribute for blob URLs.
+      // For Save actions, open the generated image directly so the user can
+      // long-press and save it when automatic download is unavailable.
+      document.addEventListener('click', function (event) {
+        const button = event.target.closest('button');
+        if (!button || !/\bSave\b/.test(button.textContent || '')) return;
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (!isIOS) return;
+
+        const originalClick = event;
+        setTimeout(function () {
+          const links = Array.from(document.querySelectorAll('a[download]'));
+          const link = links[links.length - 1];
+          if (!link || !link.href) return;
+          event.preventDefault();
+          window.open(link.href, '_blank', 'noopener,noreferrer');
+        }, 0);
+      }, true);
+    </script>
   </head>
   <body>
     <div id="root"></div>
