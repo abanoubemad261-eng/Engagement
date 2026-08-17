@@ -9,9 +9,12 @@
 .opening .curtain{width:50%;z-index:3;transition:none}.opening .curtain-left{left:0;border-right:1px solid rgba(82,58,39,.28)!important}.opening .curtain-right{right:0;border-left:1px solid rgba(82,58,39,.28)!important}
 .opening .curtain-left::before,.opening .curtain-right::before{content:'';position:absolute;top:0;bottom:0;width:22px;opacity:.32;background:linear-gradient(90deg,transparent,rgba(82,58,39,.28),rgba(255,255,255,.22),transparent);filter:blur(1px)}.opening .curtain-left::before{right:-10px}.opening .curtain-right::before{left:-10px}
 .opening-content{color:#3d3028!important;text-shadow:0 2px 18px rgba(255,255,255,.3)}.opening-content .eyebrow,.opening-content small,.opening-content>p:not(.eyebrow){color:#4e3a2a}.opening-content .primary-btn{color:#4b392b;border-color:rgba(75,57,43,.55);background:rgba(255,255,255,.16)}.opening-content .primary-btn:hover{background:#4b392b;color:#fffaf4}
-/* IMPORTANT: the Home section is mounted only after the Open Invitation button is pressed.
-   Therefore these animations begin at the exact moment of that click — never on page load. */
-.hero{overflow:hidden;isolation:isolate}.hero::before,.hero::after{content:'';position:absolute;top:0;bottom:0;width:50%;z-index:20;pointer-events:none;will-change:transform;animation-duration:4s;animation-delay:0s;animation-fill-mode:forwards;animation-timing-function:cubic-bezier(.76,0,.18,1)}.hero::before{left:0;transform:translateX(0);transform-origin:center left;animation-name:curtainOpenLeft}.hero::after{right:0;transform:translateX(0);transform-origin:center right;animation-name:curtainOpenRight}.hero .hero-copy{position:relative;z-index:2;animation:homeReveal 1.2s 2.6s both}
+/* IMPORTANT: Keep the hero reveal paused while the opening screen is visible.
+   The 4-second curtain timer starts only when Open Invitation is clicked,
+   because the opening screen disappears at that exact moment. */
+.hero{overflow:hidden;isolation:isolate}.hero::before,.hero::after{content:'';position:absolute;top:0;bottom:0;width:50%;z-index:20;pointer-events:none;will-change:transform;animation-duration:4s;animation-delay:0s;animation-fill-mode:forwards;animation-timing-function:cubic-bezier(.76,0,.18,1);animation-play-state:running}.hero::before{left:0;transform:translateX(0);transform-origin:center left;animation-name:curtainOpenLeft}.hero::after{right:0;transform:translateX(0);transform-origin:center right;animation-name:curtainOpenRight}.hero .hero-copy{position:relative;z-index:2;animation:homeReveal 1.2s 2.6s both}
+/* While the opening overlay exists, freeze the hero animations at time zero. */
+.site-shell:has(.opening) .hero::before,.site-shell:has(.opening) .hero::after,.site-shell:has(.opening) .hero .hero-copy{animation-play-state:paused}
 @keyframes curtainOpenLeft{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 @keyframes curtainOpenRight{0%{transform:translateX(0)}100%{transform:translateX(100%)}}
 @keyframes homeReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
