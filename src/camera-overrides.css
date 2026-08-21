@@ -1,0 +1,49 @@
+.camera-window {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Keep the admin-defined camera/photo window locked; only the photo moves inside it. */
+.camera-window .captured-photo {
+  transform-origin: center center !important;
+}
+
+/* Back is always a separate full-width control below Capture / Flip / Save / Retake. */
+.camera-actions .camera-close {
+  order: 99;
+  flex: 0 0 100%;
+  width: min(150px, 42vw);
+  min-height: 46px;
+  margin: 6px auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.camera-actions .camera-close::after {
+  content: 'Back';
+  font-size: 14px;
+  letter-spacing: .08em;
+}
+
+.camera-actions .camera-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* The gesture is drag-only; no visible zoom controls. */
+.camera-note {
+  font-size: 0;
+}
+
+.camera-note::after {
+  content: 'Drag the photo inside the frame to choose exactly what appears.';
+  font-size: 12px;
+}
