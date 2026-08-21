@@ -9,7 +9,15 @@ const applyMemoryWallLimit=()=>{
   if(cards.length>5){
     const card=document.createElement('article')
     card.className='memory-see-more-card'
-    card.innerHTML=`<a class="memory-see-more" href="/memories"><span>See More</span><small>+ ${cards.length-5} more memories</small></a>`
+    const link=document.createElement('a')
+    link.className='memory-see-more'
+    link.href='/memories'
+    link.innerHTML=`<span>See More</span><small>+ ${cards.length-5} more memories</small>`
+    link.addEventListener('click',event=>{
+      event.preventDefault()
+      window.location.assign('/memories')
+    })
+    card.appendChild(link)
     grid.appendChild(card)
   }
 }
