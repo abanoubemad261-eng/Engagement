@@ -1,0 +1,24 @@
+/* Make ordinary mobile taps activate controls on the first touch. */
+button,
+a,
+label,
+input,
+textarea,
+select,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Do not let the page itself become a double-tap gesture target. */
+html,
+body {
+  touch-action: manipulation;
+}
+
+/* The camera window keeps its own pointer handling; it is intentionally not
+   covered by this global rule when it needs photo interaction. */
+.camera-window {
+  -webkit-user-select: none;
+  user-select: none;
+}
