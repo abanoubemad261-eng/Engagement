@@ -8,6 +8,7 @@ import './location.css'
 import './wishes-private.css'
 import './final.css'
 import './camera-touch-lock.js'
+import './camera-overrides.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
