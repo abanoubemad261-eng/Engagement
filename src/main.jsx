@@ -9,6 +9,7 @@ import './wishes-private.css'
 import './final.css'
 import './camera-touch-lock.js'
 import './camera-overrides.css'
+import './photo-crop-fix.js'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
