@@ -1,0 +1,15 @@
+/* Keep mobile taps as immediate clicks instead of triggering double-tap zoom. */
+button,
+a,
+label,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Camera gesture handling is scoped to the camera window itself. */
+.camera-window {
+  touch-action: none;
+}
