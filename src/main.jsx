@@ -13,6 +13,7 @@ import './camera-overrides.css'
 import './photo-crop-fix.js'
 import './memory-wall.css'
 import './memory-wall-limit.js'
+import './bottom-nav-fix.css'
 
 const Root=location.pathname==='/memories'?<Memories/>:<App/>
 ReactDOM.createRoot(document.getElementById('root')).render(
